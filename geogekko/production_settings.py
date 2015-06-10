@@ -11,6 +11,6 @@ DATABASES = {
     }
 }
 
-TEMPLATE_DIRS=('/opt/bitnami/apps/django/django_projects/geogekko/templates')
+TEMPLATE_DIRS=('/opt/bitnami/apps/django/django_projects/geogekko/templates/',)
 
 ELASTIC_SEARCH_HOST="http://localhost:9200/"
