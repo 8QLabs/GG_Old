@@ -27,4 +27,4 @@ TEMPLATES = [
     },
 ]
 
-ELASTIC_SEARCH_HOST="http://localhost:9200/"
+ELASTIC_SEARCH_HOST="http://52.7.56.209:9200/"
