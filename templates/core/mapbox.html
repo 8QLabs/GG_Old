@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8 />
+    <title>A simple map</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+
+        div#search-container {
+          position:absolute;
+          top:10px;
+          right:10px;
+          padding:5px 10px;
+          background:rgba(0,0,0,0.5);
+          color:#fff;
+          font-size:11px;
+          line-height:18px;
+          border-radius:3px;
+        }
+    </style>
+</head>
+<body>
+<div id='map'></div>
+
+<pre id='coordinates' class='ui-coordinates'></pre>
+<div id="search-container">
+    <input name="location" type="text" placeholder="Enter a Location" />
+    <button>Change Location</button>
+
+    <input name="query" type="text" placeholder="Enter a search term" />
+    <button>Filter</button>
+</div>
+
+</body>
+</html>
+
+<script>
+    L.mapbox.accessToken = 'pk.eyJ1IjoicnJvb3BhbiIsImEiOiI4NTA3Nzc5Y2Q3ZmMwZjE1ODk0N2QyM2JkN2MzN2MxNyJ9.NoBhRnmo8RTMtb5mZ4J_pQ';
+    var map = L.mapbox.map('map', 'mapbox.streets')
+            .setView([40.7611095,-73.9913995], 13);
+
+    {% for hit in hits %}
+        var marker = L.marker([{{ hit.lat }},{{ hit.lon }}], {
+            icon: L.mapbox.marker.icon({
+                'marker-size': 'small',
+                'marker-symbol': 'bus',
+                'marker-color': '#fa0'
+            })
+        }).addTo(map);
+    {% endfor %}
+</script>
