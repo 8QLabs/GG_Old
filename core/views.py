@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from django.template import RequestContext
 from django.shortcuts import render_to_response
+from django.conf import settings
 from elasticsearch import Elasticsearch
 
 
 # create instance of elasticsearch
-es = Elasticsearch(["http://52.7.56.209:9200/"])
+es = Elasticsearch([settings.ELASTIC_SEARCH_HOST])
 
 # Create your views here.
 def map(request):

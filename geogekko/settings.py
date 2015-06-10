@@ -51,21 +51,6 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'geogekko.urls'
 
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/Users/rajiv/8qlabs/geogekko/templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
 
 WSGI_APPLICATION = 'geogekko.wsgi.application'
 
@@ -73,17 +58,6 @@ WSGI_APPLICATION = 'geogekko.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'djangostack',
-#         'HOST': '/opt/bitnami/postgresql',
-#         'PORT': '5432',
-#         'USER': 'bitnami',
-#         'PASSWORD': '78f22aeb2b'
-#     }
-# }
 #
 # EXAMPLE_DATABASES = {
 #     'default': {
@@ -114,3 +88,34 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )
+
+#LOCAL SETTINGS
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'djangostack',
+#         'HOST': '/opt/bitnami/postgresql',
+#         'PORT': '5432',
+#         'USER': 'bitnami',
+#         'PASSWORD': '78f22aeb2b'
+#     }
+# }
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': ['/Users/rajiv/8qlabs/geogekko/templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+ELASTIC_SEARCH_HOST="http://52.7.56.209:9200/"
