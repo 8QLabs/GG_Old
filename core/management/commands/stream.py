@@ -5,13 +5,15 @@ from tweepy import OAuthHandler
 from tweepy import Stream
 from elasticsearch import Elasticsearch
 
+from django.conf import settings
+
 consumer_key="1pHkCAf3Nuj9DSuPM9JYeC9CN"
 consumer_secret= "mrsLgza7AIiADShBgkYxd5ippzG77ytuiiPnCgGvtY42MD6pq0"
 access_token="535698855-JDY9iMbTPYQP0yXGYua2pVWS2m1VK2htMuUEyMfO"
 access_token_secret= "27tfGAwjO6uKViTioi6lZbgEFnsI2btV5IsKBGRzYQqkB"
 
 # create instance of elasticsearch
-es = Elasticsearch(["http://52.7.56.209:9200/"])
+es = Elasticsearch(["http://localhost:9200/"])
 
 # Bounding boxes for geolocations
 # Online-Tool to create boxes (c+p as raw CSV): http://boundingbox.klokantech.com/
