@@ -14,7 +14,7 @@ DATABASES = {
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/home/bitnami/apps/django/django_projects/geogekko/templates'],
+        'DIRS': ['/opt/bitnami/apps/django/django_projects/geogekko/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
