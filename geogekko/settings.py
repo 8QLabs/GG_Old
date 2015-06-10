@@ -105,7 +105,7 @@ STATICFILES_DIRS = (
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/Users/rajiv/8qlabs/geogekko/templates'],
+        'DIRS': ['/Users/rajiv/8qlabs/geogekko/templates', '/opt/bitnami/apps/django/django_projects/geogekko/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
