@@ -18,7 +18,7 @@ es = Elasticsearch(["http://localhost:9200/"])
 # Bounding boxes for geolocations
 # Online-Tool to create boxes (c+p as raw CSV): http://boundingbox.klokantech.com/
 GEOBOX_WORLD = [-180,-90,180,90]
-GEOBOX_NY = [-123.16, 39.52, -115.76, 32.6]
+GEOBOX_NY = [-123.16, 36.2, -115.76, 39.52]
 
 class TweetStreamListener(StreamListener):
 
