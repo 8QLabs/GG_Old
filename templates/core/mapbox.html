@@ -4,6 +4,8 @@
     <meta charset=utf-8 />
     <title>A simple map</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet' />
     <style>
@@ -21,10 +23,19 @@
           line-height:18px;
           border-radius:3px;
         }
+
+        .css-icon {
+            width: 2px;
+            height: 2px;
+            background-color: dodgerblue;
+{#            border-top: 30px solid transparent;#}
+{#            border-bottom: 30px solid transparent;#}
+{#            border-left: 30px solid #ff8888;#}
+        }
     </style>
 </head>
 <body>
-<div id='map'></div>
+<div id='map' class="dark"></div>
 
 <pre id='coordinates' class='ui-coordinates'></pre>
 <div id="search-container">
@@ -39,17 +50,21 @@
 </html>
 
 <script>
-    L.mapbox.accessToken = 'pk.eyJ1IjoicnJvb3BhbiIsImEiOiI4NTA3Nzc5Y2Q3ZmMwZjE1ODk0N2QyM2JkN2MzN2MxNyJ9.NoBhRnmo8RTMtb5mZ4J_pQ';
-    var map = L.mapbox.map('map', 'mapbox.streets')
+    L.mapbox.accessToken = 'pk.eyJ1IjoiOHFsYWJzIiwiYSI6IjJYcnhObFEifQ.cqWyVvIXQf0BJp6hatERmw';
+    var map = L.mapbox.map('map', 'mapbox.light')
             .setView([40.7611095,-73.9913995], 13);
 
+    // Define an icon called cssIcon
+    var cssIcon = L.divIcon({
+      // Specify a class name we can refer to in CSS.
+      className: 'css-icon',
+      // Set marker width and height
+      iconSize: [2, 2]
+    });
+
     {% for hit in hits %}
-        var marker = L.marker([{{ hit.lat }},{{ hit.lon }}], {
-            icon: L.mapbox.marker.icon({
-                'marker-size': 'small',
-                'marker-symbol': 'bus',
-                'marker-color': '#fa0'
-            })
-        }).addTo(map);
+        var marker = L.marker([{{ hit.lat }},{{ hit.lon }}], {icon: cssIcon}).addTo(map);
+
+        //http://mw1.google.com/crisisresponse/icons/teal_dot.png
     {% endfor %}
 </script>

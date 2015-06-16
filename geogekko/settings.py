@@ -91,16 +91,16 @@ STATICFILES_DIRS = (
 
 #LOCAL SETTINGS
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'djangostack',
-#         'HOST': '/opt/bitnami/postgresql',
-#         'PORT': '5432',
-#         'USER': 'bitnami',
-#         'PASSWORD': '78f22aeb2b'
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'djangostack',
+        'HOST': '52.7.56.209',
+        'PORT': '5432',
+        'USER': 'bitnami',
+        'PASSWORD': '78f22aeb2b'
+    }
+}
 
 TEMPLATES = [
     {
@@ -118,4 +118,4 @@ TEMPLATES = [
     },
 ]
 
-ELASTIC_SEARCH_HOST="http://52.7.56.209:9200/"
+ELASTIC_SEARCH_HOST="http://alpha.geogekko.com:9200/"

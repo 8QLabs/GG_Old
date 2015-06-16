@@ -4,6 +4,9 @@ from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 from elasticsearch import Elasticsearch
+import csv
+
+from datetime import date
 
 from django.conf import settings
 
@@ -13,12 +16,35 @@ access_token="535698855-JDY9iMbTPYQP0yXGYua2pVWS2m1VK2htMuUEyMfO"
 access_token_secret= "27tfGAwjO6uKViTioi6lZbgEFnsI2btV5IsKBGRzYQqkB"
 
 # create instance of elasticsearch
-es = Elasticsearch(["http://localhost:9200/"])
+# es = Elasticsearch(["http://localhost:9200/"])
 
 # Bounding boxes for geolocations
 # Online-Tool to create boxes (c+p as raw CSV): http://boundingbox.klokantech.com/
 GEOBOX_WORLD = [-180,-90,180,90]
-GEOBOX_NY = [-74.2593, 40.5075, -71.8011, 41.1869]
+GEOBOX_NY = [-78.57, 36.54, -68.74, 43.78]
+
+FILE_OUT = None
+TODAY_DATE_STR = ''
+CSV_WRITER = None
+
+def get_csv_writer():
+    global TODAY_DATE_STR
+    global FILE_OUT
+    global CSV_WRITER
+
+    current_date_str = date.today().strftime("%m-%d-%Y")
+
+    if TODAY_DATE_STR != current_date_str:
+        TODAY_DATE_STR = current_date_str
+        filename = 'twitter_ny_' + current_date_str + '.csv'
+
+        if FILE_OUT:
+            FILE_OUT.close()
+
+        FILE_OUT = open(filename, 'w')
+        CSV_WRITER = csv.writer(FILE_OUT, delimiter=',', dialect=csv.excel_tab)
+
+    return CSV_WRITER
 
 class TweetStreamListener(StreamListener):
 
@@ -27,37 +53,71 @@ class TweetStreamListener(StreamListener):
 
         # decode json
         if data is not None:
-            print data
             tweet = json.loads(data)
 
-        # pass tweet into TextBlob
-        #tweet = TextBlob(dict_data["text"])
+            # add text and sentiment info to elasticsearch
+            if (tweet['text'] is not None and tweet['id'] is not None and tweet['created_at'] is not None and  tweet['user']['id'] is not None and  tweet['user']['name'] is not None and tweet['user']['followers_count'] is not None and tweet['user']['statuses_count'] is not None and tweet['user']['description'] is not None and tweet['coordinates'] is not None and tweet['coordinates'] is not 'null' ):
+                to_write = []
+                to_write.append(tweet["timestamp_ms"])
+                to_write.append(tweet["created_at"])
+                to_write.append(tweet["user"]["id"])
+                to_write.append(tweet["user"]["screen_name"])
+                to_write.append(tweet["user"]["name"])
+                to_write.append(tweet["source"])
+                to_write.append(tweet["user"]["location"])
+                to_write.append(tweet["user"]["followers_count"])
+                to_write.append(tweet["user"]["friends_count"])
+                to_write.append(tweet["coordinates"]["coordinates"][1])
+                to_write.append(tweet["coordinates"]["coordinates"][0])
+                to_write.append(tweet["text"])
 
-        # add text and sentiment info to elasticsearch
-        if (tweet['text'] is not None and tweet['id'] is not None and tweet['created_at'] is not None and  tweet['user']['id'] is not None and  tweet['user']['name'] is not None and tweet['user']['followers_count'] is not None and tweet['user']['statuses_count'] is not None and tweet['user']['description'] is not None and tweet['coordinates'] is not None and tweet['coordinates'] is not 'null' ):
-            es.index(index="tweets",
-                 doc_type="tweet",
-                 id=tweet["id"],
-                 body={"timestamp_ms": tweet["timestamp_ms"],
-                       "date_created": tweet["created_at"],
-                       "user_id": tweet["user"]["id"],
-                       "user_screen_name": tweet["user"]["screen_name"],
-                       "user_name": tweet["user"]["name"],
-                       "user_agent": tweet["source"],
-                       "user_location": tweet["user"]["location"],
-                       "followers_count": tweet["user"]["followers_count"],
-                       "friends_count": tweet["user"]["friends_count"],
-                       "location": {
-                           "lat": tweet["coordinates"]["coordinates"][1],
-                           "lon": tweet["coordinates"]["coordinates"][0]
-                       },
-                       "text": tweet["text"]
-                 })
+                writer = get_csv_writer()
+                print to_write
+                writer.writerow(to_write)
+
         return True
 
     # on failure
     def on_error(self, status):
         print status
+
+
+# to_write = {"timestamp_ms": tweet["timestamp_ms"],
+#                    "date_created": tweet["created_at"],
+#                    "user_id": tweet["user"]["id"],
+#                    "user_screen_name": tweet["user"]["screen_name"],
+#                    "user_name": tweet["user"]["name"],
+#                    "user_agent": tweet["source"],
+#                    "user_location": tweet["user"]["location"],
+#                    "followers_count": tweet["user"]["followers_count"],
+#                    "friends_count": tweet["user"]["friends_count"],
+#                    "location": {
+#                        "lat": tweet["coordinates"]["coordinates"][1],
+#                        "lon": tweet["coordinates"]["coordinates"][0]
+#                    },
+#                    "text": tweet["text"]
+#              }
+
+def index_tweet():
+    pass
+    # es.index(index="tweets",
+    #      doc_type="tweet",
+    #      id=tweet["id"],
+    #      body={"timestamp_ms": tweet["timestamp_ms"],
+    #            "date_created": tweet["created_at"],
+    #            "user_id": tweet["user"]["id"],
+    #            "user_screen_name": tweet["user"]["screen_name"],
+    #            "user_name": tweet["user"]["name"],
+    #            "user_agent": tweet["source"],
+    #            "user_location": tweet["user"]["location"],
+    #            "followers_count": tweet["user"]["followers_count"],
+    #            "friends_count": tweet["user"]["friends_count"],
+    #            "location": {
+    #                "lat": tweet["coordinates"]["coordinates"][1],
+    #                "lon": tweet["coordinates"]["coordinates"][0]
+    #            },
+    #            "text": tweet["text"]
+    #      })
 
 if __name__ == '__main__':
 
