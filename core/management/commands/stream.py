@@ -5,6 +5,7 @@ from tweepy import OAuthHandler
 from tweepy import Stream
 from elasticsearch import Elasticsearch
 import csv
+import sys
 
 from datetime import date
 
@@ -20,31 +21,35 @@ access_token_secret= "27tfGAwjO6uKViTioi6lZbgEFnsI2btV5IsKBGRzYQqkB"
 
 # Bounding boxes for geolocations
 # Online-Tool to create boxes (c+p as raw CSV): http://boundingbox.klokantech.com/
+
+#southwest corner then north east
 GEOBOX_WORLD = [-180,-90,180,90]
 GEOBOX_NY = [-78.57, 36.54, -68.74, 43.78]
+GEOBOX_CA = [-123.16, 39.52, -115.76, 32.6]
+GEOBOX_SF = [-122.5777, 37.1803, -121.7216, 38.0164]
+
+FILE_DIR = '/mnt/data/twitter/'
 
 FILE_OUT = None
 TODAY_DATE_STR = ''
-CSV_WRITER = None
+CITY = sys.argv[1]
 
-def get_csv_writer():
+def get_file_writer():
     global TODAY_DATE_STR
     global FILE_OUT
-    global CSV_WRITER
 
     current_date_str = date.today().strftime("%m-%d-%Y")
 
     if TODAY_DATE_STR != current_date_str:
         TODAY_DATE_STR = current_date_str
-        filename = 'twitter_ny_' + current_date_str + '.csv'
+        filename = FILE_DIR + 'twitter_' + CITY + '_' + current_date_str + '.txt'
 
         if FILE_OUT:
             FILE_OUT.close()
 
         FILE_OUT = open(filename, 'w')
-        CSV_WRITER = csv.writer(FILE_OUT, delimiter=',', dialect=csv.excel_tab)
 
-    return CSV_WRITER
+    return FILE_OUT
 
 class TweetStreamListener(StreamListener):
 
@@ -57,23 +62,9 @@ class TweetStreamListener(StreamListener):
 
             # add text and sentiment info to elasticsearch
             if (tweet['text'] is not None and tweet['id'] is not None and tweet['created_at'] is not None and  tweet['user']['id'] is not None and  tweet['user']['name'] is not None and tweet['user']['followers_count'] is not None and tweet['user']['statuses_count'] is not None and tweet['user']['description'] is not None and tweet['coordinates'] is not None and tweet['coordinates'] is not 'null' ):
-                to_write = []
-                to_write.append(tweet["timestamp_ms"])
-                to_write.append(tweet["created_at"])
-                to_write.append(tweet["user"]["id"])
-                to_write.append(tweet["user"]["screen_name"])
-                to_write.append(tweet["user"]["name"])
-                to_write.append(tweet["source"])
-                to_write.append(tweet["user"]["location"])
-                to_write.append(tweet["user"]["followers_count"])
-                to_write.append(tweet["user"]["friends_count"])
-                to_write.append(tweet["coordinates"]["coordinates"][1])
-                to_write.append(tweet["coordinates"]["coordinates"][0])
-                to_write.append(tweet["text"])
-
-                writer = get_csv_writer()
-                print to_write
-                writer.writerow(to_write)
+                writer = get_file_writer()
+                print data
+                FILE_OUT.write(data)
 
         return True
 
@@ -120,6 +111,15 @@ def index_tweet():
     #      })
 
 if __name__ == '__main__':
+    geo = None
+    if CITY == 'ca':
+        geo = GEOBOX_CA
+    elif CITY == 'sf':
+        geo = GEOBOX_SF
+    elif CITY == 'ny':
+        geo = GEOBOX_NY
+    else:
+        geo = GEOBOX_NY
 
     # create instance of the tweepy tweet stream listener
     listener = TweetStreamListener()
@@ -131,5 +131,7 @@ if __name__ == '__main__':
     # create instance of the tweepy stream
     stream = Stream(auth, listener)
 
+
+
     # search twitter for "congress" keyword
-    stream.filter(locations=GEOBOX_NY )
+    stream.filter(locations=geo )
