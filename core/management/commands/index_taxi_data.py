@@ -7,7 +7,7 @@ from datetime import datetime
 from django.conf import settings
 
 # create instance of elasticsearch
-es = Elasticsearch(["http://alpha.geogekko.com:9200/"])
+es = Elasticsearch(["http://localhost:9200/"])
 
 INDEX_NAME = 'nyc_taxi_data'
 TYPE_NAME = 'taxi'
@@ -110,7 +110,7 @@ def index_data():
             bulk_data.append(op_dict)
             bulk_data.append(data_dict)
 
-            if count % 200000 == 0:
+            if count % 50000 == 0:
                 do_bulk_index(bulk_data)
                 del bulk_data[:]
 
