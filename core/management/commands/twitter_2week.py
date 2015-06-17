@@ -4,6 +4,7 @@ import tweepy
 import time
 import sys
 from datetime import date
+import json
 
 auth = tweepy.OAuthHandler('1pHkCAf3Nuj9DSuPM9JYeC9CN', 'mrsLgza7AIiADShBgkYxd5ippzG77ytuiiPnCgGvtY42MD6pq0')
 auth.set_access_token('535698855-JDY9iMbTPYQP0yXGYua2pVWS2m1VK2htMuUEyMfO', '27tfGAwjO6uKViTioi6lZbgEFnsI2btV5IsKBGRzYQqkB')
@@ -37,8 +38,8 @@ count = 0
 while True:
     try:
         tweet = c.next()
-        file.write(tweet)
-        print tweet
+	print json.dumps(tweet._json)
+        file.write(json.dumps(tweet._json) + '\n')
         count = count + 1
         # cur.execute(" INSERT INTO NYC_Feb(text, tweet_id, date, user_id, name, followers_count, statuses_count, description, slat, slon, tract, lat, lon) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", [  tweet.text.encode('utf8', 'ignore'), tweet.id, tweet.created_at, tweet.author._json['id'], tweet.author._json['name'].encode('utf8', 'ignore'), tweet.author._json['followers_count'], tweet.author._json['statuses_count'], tweet.author._json['description'].encode('utf8', 'ignore'), lat, lon, tract, tweet._json['coordinates']['coordinates'][1], tweet._json['coordinates']['coordinates'][0] ]  )
         # db.commit()
