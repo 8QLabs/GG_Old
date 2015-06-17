@@ -4,12 +4,12 @@ from django.views.debug import default_urlconf
 
 
 urlpatterns = patterns('core.views',
-    url(r'^map$', 'map'),
-
     url(r'^index/dashboard$', 'dashboard'),
     url(r'^index/create$', 'create_index'),
+)
 
-    url(r'^data/pull_historical_tweets$', 'pull_historical_tweets'),
+urlpatterns += patterns('ui.views',
+    url(r'^map$', 'map'),
 )
 
 urlpatterns += patterns('',

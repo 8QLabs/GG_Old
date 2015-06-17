@@ -37,8 +37,8 @@ count = 0
 while True:
     try:
         tweet = c.next()
-        file.write(tweet)
-        print tweet
+        file.write(str(tweet))
+        # print tweet
         count = count + 1
         # cur.execute(" INSERT INTO NYC_Feb(text, tweet_id, date, user_id, name, followers_count, statuses_count, description, slat, slon, tract, lat, lon) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", [  tweet.text.encode('utf8', 'ignore'), tweet.id, tweet.created_at, tweet.author._json['id'], tweet.author._json['name'].encode('utf8', 'ignore'), tweet.author._json['followers_count'], tweet.author._json['statuses_count'], tweet.author._json['description'].encode('utf8', 'ignore'), lat, lon, tract, tweet._json['coordinates']['coordinates'][1], tweet._json['coordinates']['coordinates'][0] ]  )
         # db.commit()

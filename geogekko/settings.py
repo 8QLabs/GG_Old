@@ -36,7 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core'
+    'core', 'ui'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -95,7 +95,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'djangostack',
-        'HOST': '52.7.56.209',
+        'HOST': 'alpha.geogekko.com',
         'PORT': '5432',
         'USER': 'bitnami',
         'PASSWORD': '78f22aeb2b'
