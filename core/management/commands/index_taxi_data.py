@@ -28,7 +28,16 @@ def create_taxi_index ():
                         "type":"date",
                         "format" : "yyyy-MM-dd HH:mm:ss"
                     },
+                    "year": {
+                        "type": "integer"
+                    },
                     "weekday": {
+                        "type": "integer"
+                    },
+                    "hour_of_day": {
+                        "type": "integer"
+                    },
+                    "month_of_year": {
                         "type": "integer"
                     },
                     "distance":{
@@ -87,7 +96,10 @@ def index_data():
             data_dict = {
                     "pickup_datetime": row[1],
                     "dropoff_datetime": row[2],
+                    "year": pickup_time.year,
                     "weekday": pickup_time.weekday(),
+                    "hour_of_day": pickup_time.hour,
+                    "month_of_year": pickup_time.month,
                     "distance": row[4],
                     "pickup_location": {
                         "lat": row[6],

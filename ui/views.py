@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.conf import settings
+from django.http import HttpResponse
+import json
 
 from elasticsearch import Elasticsearch
 
@@ -15,13 +17,39 @@ def index(request):
 
 # Create your views here.
 def map(request):
-    out = get_taxi_data()
 
     return render_to_response('mapbox.html', {
-        'hits': out
     },context_instance=RequestContext(request))
 
-def get_tweets():
+def filter(request):
+    lat = request.GET['lat']
+    lon = request.GET['lon']
+
+    print lat
+    hits = get_taxi_data(lat, lon)
+
+    data_array = []
+    for hit in hits:
+        hit_lat = hit['_source']['pickup_location']['lat']
+        hit_lon = hit['_source']['pickup_location']['lon']
+        data_array.append({
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "coordinates": [hit_lon, hit_lat]
+            },
+            "properties": {
+                "marker-color": "dodgerblue",
+                "marker-size": "small",
+                "icon": {
+                    "className": "css-icon"
+                }
+            }
+         })
+
+    return HttpResponse(json.dumps(data_array), content_type="application/json")
+
+def get_tweets(lat, lon):
     result = es.search(index="tweets", doc_type="tweet", body={
         # "query": {"match_all" : { }},
         "query": {
@@ -30,8 +58,8 @@ def get_tweets():
                     "geo_distance": {
                         "distance": "10km",
                         "location": {
-                            "lat": 40.7611095,
-                            "lon": -73.9913995
+                            "lat": lat,
+                            "lon": lon
                         }
                     }
                 }
@@ -42,37 +70,29 @@ def get_tweets():
 
     hits = result['hits']['hits']
 
-    out = []
+    return hits
 
-    for hit in hits:
-        out.append(hit['_source']['location'])
-
-    return out
-
-def get_taxi_data():
+def get_taxi_data(lat, lon):
     result = es.search(index="nyc_taxi_data", doc_type="taxi", body={
         # "query": {"match_all" : { }},
         "query": {
             "filtered": {
                 "filter": {
                     "geo_distance": {
-                        "distance": "4km",
+                        "distance": ".1km",
                         "dropoff_location": {
-                            "lat": 40.7611095,
-                            "lon": -73.9913995
+                            "lat": lat,
+                            "lon": lon
                         }
                     }
                 }
             }
         },
-        "size": 3000
+        "size": 10000
     })
 
     hits = result['hits']['hits']
 
-    out = []
+    print str(len(hits)) + ' found'
 
-    for hit in hits:
-        out.append(hit['_source']['dropoff_location'])
-
-    return out
+    return hits

@@ -51,6 +51,10 @@ def get_file_writer():
 
     return FILE_OUT
 
+def valid(data):
+    if data and data is not None:
+        return True
+
 class TweetStreamListener(StreamListener):
 
     # on success
@@ -61,7 +65,17 @@ class TweetStreamListener(StreamListener):
             tweet = json.loads(data)
 
             # add text and sentiment info to elasticsearch
-            if (tweet['text'] is not None and tweet['id'] is not None and tweet['created_at'] is not None and  tweet['user']['id'] is not None and  tweet['user']['name'] is not None and tweet['user']['followers_count'] is not None and tweet['user']['statuses_count'] is not None and tweet['user']['description'] is not None and tweet['coordinates'] is not None and tweet['coordinates'] is not 'null' ):
+            if (valid(tweet['text'])
+                and valid(tweet['id'])
+                and valid(tweet['created_at'])
+                and valid(tweet['user']['id'])
+                and valid(tweet['user']['name'])
+                and valid(tweet['user']['followers_count'])
+                and valid(tweet['user']['statuses_count'])
+                and valid(tweet['user']['description'])
+                and valid(tweet['coordinates'])
+                and tweet['coordinates'] is not 'null'):
+
                 writer = get_file_writer()
                 print data
                 FILE_OUT.write(data)

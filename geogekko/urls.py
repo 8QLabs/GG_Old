@@ -10,6 +10,7 @@ urlpatterns = patterns('core.views',
 
 urlpatterns += patterns('ui.views',
     url(r'^map$', 'map'),
+    url(r'^map/filter$', 'filter'),
 )
 
 urlpatterns += patterns('',
