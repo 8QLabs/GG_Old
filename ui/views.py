@@ -19,6 +19,8 @@ def index(request):
 def map(request):
 
     return render_to_response('mapbox.html', {
+        'start_lat': 40.7611095,
+        'start_lon': -73.9913995
     },context_instance=RequestContext(request))
 
 def filter(request):
@@ -26,7 +28,7 @@ def filter(request):
     lon = request.GET['lon']
 
     print lat
-    hits = get_taxi_data(lat, lon)
+    hits = get_taxi_data(lat, lon, request)
 
     data_array = []
     for hit in hits:
@@ -49,6 +51,91 @@ def filter(request):
 
     return HttpResponse(json.dumps(data_array), content_type="application/json")
 
+def get_taxi_data(lat, lon, request):
+    query_filter = [{
+        "geo_distance": {
+            "distance": ".1km",
+            "dropoff_location": {
+                "lat": lat,
+                "lon": lon
+            }
+        }
+    }]
+    if 'time_of_day' in request.GET:
+        time_of_day = request.GET['time_of_day']
+
+        if time_of_day != '-1':
+            if time_of_day == 'Morning':
+                query_filter.append({
+                    "range" : {
+                        "hour_of_day" : {
+                            "gte" : "8",
+                            "lt" : "12"
+                        }
+                    }
+                })
+            elif time_of_day == 'Afternoon':
+                query_filter.append({
+                    "range" : {
+                        "hour_of_day" : {
+                            "gte" : "12",
+                            "lt" : "17"
+                        }
+                    }
+                })
+            elif time_of_day == 'Evening':
+                query_filter.append({
+                    "range" : {
+                        "hour_of_day" : {
+                            "gte" : "17",
+                            "lt" : "23"
+                        }
+                    }
+                })
+            elif time_of_day == 'Night':
+                query_filter.append({
+                    "range" : {
+                        "hour_of_day" : {
+                            "gte" : "0",
+                            "lt" : "8"
+                        }
+                    }
+                })
+
+    if 'time_of_week' in request.GET:
+        time_of_week = request.GET['time_of_week']
+        if time_of_week != '-1':
+            if time_of_week == 'Weekday':
+                query_filter.append({
+                    "terms" : {
+                        "weekday" : [0,1,2,3,4,5]
+                    }
+                })
+            elif time_of_week == 'Weekend':
+                query_filter.append({
+                    "terms" : {
+                        "weekday" : [5, 6]
+                    }
+                })
+
+    result = es.search(index="nyc_taxi_data", doc_type="taxi", body={
+        # "query": {"match_all" : { }},
+        "query": {
+            "filtered": {
+                "filter": {
+                    "and" : query_filter
+                }
+            }
+        },
+        "size": 10000
+    })
+
+    hits = result['hits']['hits']
+
+    print str(len(hits)) + ' found'
+
+    return hits
+
 def get_tweets(lat, lon):
     result = es.search(index="tweets", doc_type="tweet", body={
         # "query": {"match_all" : { }},
@@ -69,30 +156,5 @@ def get_tweets(lat, lon):
     })
 
     hits = result['hits']['hits']
-
-    return hits
-
-def get_taxi_data(lat, lon):
-    result = es.search(index="nyc_taxi_data", doc_type="taxi", body={
-        # "query": {"match_all" : { }},
-        "query": {
-            "filtered": {
-                "filter": {
-                    "geo_distance": {
-                        "distance": ".1km",
-                        "dropoff_location": {
-                            "lat": lat,
-                            "lon": lon
-                        }
-                    }
-                }
-            }
-        },
-        "size": 10000
-    })
-
-    hits = result['hits']['hits']
-
-    print str(len(hits)) + ' found'
 
     return hits

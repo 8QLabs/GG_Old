@@ -99,6 +99,14 @@ DATABASES = {
         'PORT': '5432',
         'USER': 'bitnami',
         'PASSWORD': '78f22aeb2b'
+    },
+    'prototype': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'HOST': '192.241.238.146',
+        'PORT': '5432',
+        'USER': 'user',
+        'PASSWORD': 'boston'
     }
 }
 

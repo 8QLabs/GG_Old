@@ -2,101 +2,50 @@
 <html>
 <head>
     <meta charset=utf-8 />
-    <title>A simple map</title>
+    <title>GeoGekko</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.js'></script>
+    <script src="/static/js/lib/main.js"></script>
+
     <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet' />
-    <style>
-        body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
-
-        div#search-container {
-          position:absolute;
-          top:10px;
-          right:10px;
-          padding:5px 10px;
-          background:rgba(0,0,0,0.5);
-          color:#fff;
-          font-size:11px;
-          line-height:18px;
-          border-radius:3px;
-        }
-
-        .css-icon {
-            width: 2px;
-            height: 2px;
-            background-color: dodgerblue;
-{#            border-top: 30px solid transparent;#}
-{#            border-bottom: 30px solid transparent;#}
-{#            border-left: 30px solid #ff8888;#}
-        }
-    </style>
+    <link href="/static/css/main.css" rel="stylesheet" />
 </head>
 <body>
 <div id='map' class="dark"></div>
 
 <pre id='coordinates' class='ui-coordinates'></pre>
 <div id="search-container">
-    <input name="location" type="text" placeholder="Enter a Location" size="100" />
-    <button>Change Location</button>
+    <form id="filter-form">
+        <input name="location" type="text" placeholder="Enter a Location" size="50" />
+
+        <select name="time_of_week">
+            <option value="-1">Time of Week</option>
+            <option>Weekday</option>
+            <option>Weekend</option>
+        </select>
+
+        <select name="time_of_day">
+            <option value="-1">Time of Day</option>
+            <option>Morning</option>
+            <option>Afternoon</option>
+            <option>Evening</option>
+            <option>Night</option>
+        </select>
+
+        <button type="button" id="filter">Submit</button>
+    </form>
 </div>
 
 </body>
 </html>
 
 <script>
-    // Define an icon called cssIcon
-    var cssIcon = L.divIcon({
-      // Specify a class name we can refer to in CSS.
-      className: 'css-icon',
-      // Set marker width and height
-      iconSize: [2, 2]
+    $(document).ready(function() {
+        var LATITUDE = {{ start_lat }};
+        var LONGITUDE = {{ start_lon }};
+
+        GG.init(LATITUDE, LONGITUDE);
     });
-    var featureLayer;
-    L.mapbox.accessToken = 'pk.eyJ1IjoiOHFsYWJzIiwiYSI6IjJYcnhObFEifQ.cqWyVvIXQf0BJp6hatERmw';
-
-    var map = L.mapbox.map('map', 'mapbox.light')
-            .setView([40.7611095,-73.9913995], 13)
-            .addControl(L.mapbox.geocoderControl('mapbox.places', {autocomplete: true}).on('select', function (e) {
-                console.log(e);
-                var lat = e.feature.center[1];
-                var lon = e.feature.center[0];
-{#                featureLayer.setGeoJSON([]);#}
-                map.removeLayer(featureLayer);
-                addLayer(lat, lon);
-            })
-    );
-
-    function addLayer (lat, lon) {
-        featureLayer = L.mapbox.featureLayer()
-        .loadURL('/map/filter?lat=' + lat + '&lon=' + lon)
-        .addTo(map);
-
-        // Set a custom icon on each marker based on feature properties.
-        featureLayer.on('layeradd', function(e) {
-            var marker = e.layer,
-            feature = marker.feature;
-
-            marker.setIcon(cssIcon);
-        });
-
-        myLayer.on('click', function(e) {
-            resetColors();
-            e.layer.feature.properties['old-color'] = e.layer.feature.properties['marker-color'];
-            e.layer.feature.properties['marker-color'] = '#ff8888';
-            myLayer.setGeoJSON(geoJson);
-        });
-
-        addStoreMarkers();
-    }
-
-    function addStoreMarkers () {
-        L.marker([40.7217199,-74.0028646]).addTo(map);  // soho
-        L.marker([40.7379194,-73.9898921]).addTo(map);  //union square
-    }
-
-    //@40.7217199,-74.0028646
-    addLayer(40.7217199,-74.0028646);
 </script>
