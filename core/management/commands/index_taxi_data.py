@@ -122,7 +122,7 @@ def index_data():
             bulk_data.append(op_dict)
             bulk_data.append(data_dict)
 
-            if count % 50000 == 0:
+            if count % 40000 == 0:
                 do_bulk_index(bulk_data)
                 del bulk_data[:]
 
