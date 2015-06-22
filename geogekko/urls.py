@@ -5,7 +5,6 @@ from django.views.debug import default_urlconf
 
 urlpatterns = patterns('core.views',
     url(r'^index/dashboard$', 'dashboard'),
-    url(r'^index/create$', 'create_index'),
 )
 
 urlpatterns += patterns('ui.views',

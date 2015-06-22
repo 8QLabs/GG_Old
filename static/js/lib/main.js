@@ -16,7 +16,8 @@ var HastensLocationsGeoJson = [
             "title": "Hastens SoHo",
             "description": "75 Grand St, New York, NY 10013",
             "marker-color": "#1E90FF",
-            "marker-size": "medium"
+            "marker-size": "medium",
+            "filter-start-point": true
         }
     },
     {
@@ -101,8 +102,6 @@ var GG = (function () {
         _setupEvents();
 
         _mapEngine.renderLayers(GeoGekko.FeatureLayers);
-
-        //GG.filterLayer(40.7217199, -74.0028646);
     }
 
     function _setupEvents () {
@@ -140,11 +139,21 @@ GeoGekko.MapEngine.Mapbox = function () {
 
         if (layer.data) {
             console.log('Loading data for layer...' + layer.data);
+
+            //find filtering start point
+            for (var i = 0; i < layer.data.length; i++) {
+                if (layer.data[i].properties['filter-start-point']) {
+                    layer.data[i].properties['old-color'] = layer.data[i].properties['marker-color'];
+                    layer.data[i].properties['marker-color'] = '#ff8888';
+                }
+            }
+
             var featureLayer = L.mapbox.featureLayer(layer.data).addTo(_map);
 
             featureLayer.on('click', function(e) {
                 console.log(e);
 
+                //reset markers
                 for (var i = 0; i < layer.data.length; i++) {
                     layer.data[i].properties['marker-color'] = layer.data[i].properties['old-color'] ||
                         layer.data[i].properties['marker-color'];
@@ -154,7 +163,7 @@ GeoGekko.MapEngine.Mapbox = function () {
                 e.layer.feature.properties['old-color'] = e.layer.feature.properties['marker-color'];
                 e.layer.feature.properties['marker-color'] = '#ff8888';
                 featureLayer.setGeoJSON(layer.data);
-                
+
                 GG.filterLayer('nyc-taxi', e.latlng.lat, e.latlng.lng, $('#filter-form').serialize());
             });
 

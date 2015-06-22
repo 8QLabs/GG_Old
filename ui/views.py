@@ -108,7 +108,7 @@ def get_taxi_data(lat, lon, request):
             if time_of_week == 'Weekday':
                 query_filter.append({
                     "terms" : {
-                        "weekday" : [0,1,2,3,4,5]
+                        "weekday" : [0,1,2,3,4]
                     }
                 })
             elif time_of_week == 'Weekend':
