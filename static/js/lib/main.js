@@ -3,76 +3,95 @@
  */
 
 var GeoGekko = window.GeoGekko || {};
+GeoGekko.MapEngine = {};
 
-var HastensLocationsGeoJson =  [
+var HastensLocationsGeoJson = [
     {
         "type": "Feature",
         "geometry": {
             "type": "Point",
-            "coordinates": [40.7217199, -74.0028646]
+            "coordinates": [-74.0028646, 40.7217199]
         },
         "properties": {
             "title": "Hastens SoHo",
-            "description": "1714 14th St NW, Washington DC",
-            "marker-color": "#fc4353",
-            "marker-size": "medium",
-            "marker-symbol": "store"
+            "description": "75 Grand St, New York, NY 10013",
+            "marker-color": "#1E90FF",
+            "marker-size": "medium"
         }
     },
     {
         "type": "Feature",
         "geometry": {
             "type": "Point",
-            "coordinates": [40.7379194, -73.9898921]
+            "coordinates": [-73.9898921, 40.7379194]
         },
         "properties": {
             "title": "Hastens Union Square",
-            "description": "155 9th St, San Francisco",
-            "marker-color": "#fc4353",
-            "marker-size": "medium",
-            "marker-symbol": "store"
+            "description": "876 Broadway, New York, NY 10003",
+            "marker-color": "#1E90FF",
+            "marker-size": "medium"
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-73.96078, 40.778516]
+        },
+        "properties": {
+            "title": "Hastens Madison Ave",
+            "description": "1100 Madison Ave, New York, NY 10028",
+            "marker-color": "#1E90FF",
+            "marker-size": "medium"
         }
     }
 ];
+
+GeoGekko.FeatureLayers = {
+    'hastens-locations': {
+        name: 'hastens-locations',
+        data: HastensLocationsGeoJson,
+        active: true,
+        filterable: false,
+        onClick: function () {
+
+        }
+    },
+    'nyc-taxi': {
+        name: 'nyc-taxi',
+        active: true,
+        dataUrl: '/map/filter',
+        startPoint: [40.7217199, -74.0028646],  // hastens soho locations
+        cssIcon: L.divIcon({
+            // Specify a class name we can refer to in CSS.
+            className: 'css-icon',
+            // Set marker width and height
+            iconSize: [2, 2]
+        }),
+        filterFn: function () {
+
+        }
+    },
+    'meetup': {
+        name: 'meetup',
+        dataUrl: '/map/filter',
+        active: false
+    },
+    'tweets': {
+        name: 'tweets',
+        dataUrl: '/map/filter',
+        active: false
+    }
+};
 
 var GG = (function () {
     var _latitude;
     var _longitude;
     var _mapEngine;
-    var _filters;
-
-    var _dataLayers = [
-        {
-            type: 'hastens-locations',
-            data: HastensLocationsGeoJson,
-            active: true,
-            filterable: false,
-            onClick: function () {
-
-            }
-        }, {
-            type: 'nyc-taxi',
-            active : true,
-            dataUrl: '/map/filter',
-            cssIcon:  L.divIcon({
-                // Specify a class name we can refer to in CSS.
-                className: 'css-icon',
-                // Set marker width and height
-                iconSize: [2, 2]
-            })
-        }, {
-            type: 'meetup',
-            dataUrl: '/map/filter',
-            active: false
-        },{
-            type: 'tweets',
-            dataUrl: '/map/filter',
-            active: false
-        }
-    ];
 
     function _showMap () {
-        _mapEngine = new GeoGekko.MapEngine.Mapbox().renderMap();
+        _mapEngine = new GeoGekko.MapEngine.Mapbox();
+        _mapEngine.renderMap(_latitude, _longitude);
     }
 
     function _init (lat, lon) {
@@ -81,27 +100,15 @@ var GG = (function () {
         _showMap();
         _setupEvents();
 
-        GG.filterLayer(40.7217199, -74.0028646);
+        _mapEngine.renderLayers(GeoGekko.FeatureLayers);
+
+        //GG.filterLayer(40.7217199, -74.0028646);
     }
 
     function _setupEvents () {
         $('#filter').click(function () {
-            GeoGekko.filterLayer(40.7217199, -74.0028646, $('#filter-form').serialize());
+            GG.filterLayer('nyc-taxi', 40.7217199, -74.0028646, $('#filter-form').serialize());
         })
-    }
-
-    function _showActiveLayers () {
-        for (var layer in dataLayers) {
-            if (layer.data) {
-                _showLayer(layer);
-            }
-        }
-    }
-
-    function _showLayer (layer) {
-        for (var feature in layer.data) {
-            _mapEngine.addMarker(feature);
-        }
     }
 
     return {
@@ -109,26 +116,8 @@ var GG = (function () {
             _init(lat, lon);
         },
 
-        filterDataLayer: function (lat, lon, filter) {
-            if (featureLayer)
-                map.removeLayer(featureLayer);
-
-            var url = '/map/filter?lat=' + lat + '&lon=' + lon;
-            if (filter) {
-                url += '&' + filter;
-            }
-            console.log(url);
-            featureLayer = L.mapbox.featureLayer().loadURL(url).addTo(map);
-
-            // Set a custom icon on each marker based on feature properties.
-            featureLayer.on('layeradd', function (e) {
-                var marker = e.layer,
-                        feature = marker.feature;
-
-                marker.setIcon(cssIcon);
-            });
-
-            addStoreMarkers();
+        filterLayer: function (layerName, lat, lon, filters) {
+            _mapEngine.filterLayer(layerName, lat, lon, filters);
         }
     };
 })();
@@ -136,46 +125,109 @@ var GG = (function () {
 GeoGekko.MapEngine.Mapbox = function () {
     var _map;
     var _accessToken = 'pk.eyJ1IjoiOHFsYWJzIiwiYSI6IjJYcnhObFEifQ.cqWyVvIXQf0BJp6hatERmw';
-    var _layers = {};
+    var _featureLayers = {};
+
+    function resetColors(featureLayer, geoJson) {
+        for (var i = 0; i < geoJson.length; i++) {
+            geoJson[i].properties['marker-color'] = geoJson[i].properties['old-color'] ||
+                geoJson[i].properties['marker-color'];
+        }
+        featureLayer.setGeoJSON(geoJson);
+    }
+
+    function _showLayer (layer) {
+        if (!layer.active) return;
+
+        if (layer.data) {
+            console.log('Loading data for layer...' + layer.data);
+            var featureLayer = L.mapbox.featureLayer(layer.data).addTo(_map);
+
+            featureLayer.on('click', function(e) {
+                console.log(e);
+
+                for (var i = 0; i < layer.data.length; i++) {
+                    layer.data[i].properties['marker-color'] = layer.data[i].properties['old-color'] ||
+                        layer.data[i].properties['marker-color'];
+                }
+                featureLayer.setGeoJSON(layer.data);
+
+                e.layer.feature.properties['old-color'] = e.layer.feature.properties['marker-color'];
+                e.layer.feature.properties['marker-color'] = '#ff8888';
+                featureLayer.setGeoJSON(layer.data);
+                
+                GG.filterLayer('nyc-taxi', e.latlng.lat, e.latlng.lng, $('#filter-form').serialize());
+            });
+
+            _featureLayers[layer.name] = featureLayer;
+        }
+        else if (layer.dataUrl) {
+            if (layer.startPoint) {
+                var lat = layer.startPoint[0];
+                var lon = layer.startPoint[1];
+                var url = '/map/filter?lat=' + lat + '&lon=' + lon;
+                console.log(url);
+                var featureLayer = L.mapbox.featureLayer(url).addTo(_map);
+
+                if (layer.cssIcon) {
+                    // Set a custom icon on each marker based on feature properties.
+                    featureLayer.on('layeradd', function (e) {
+                        var marker = e.layer,
+                                feature = marker.feature;
+
+                        marker.setIcon(layer.cssIcon);
+                    });
+                }
+
+                _featureLayers[layer.name] = featureLayer;
+            }
+
+        }
+        else {
+            console.log('No way to get data for this layer....');
+        }
+    }
+
+    this.filterLayer = function (layerName, lat, lon, filters) {
+        var featureLayer = _featureLayers[layerName];
+        if (featureLayer)
+            _map.removeLayer(featureLayer);
+
+        var url = '/map/filter?lat=' + lat + '&lon=' + lon;
+        if (filters) {
+            url += '&' + filters;
+        }
+        console.log(url);
+        featureLayer = L.mapbox.featureLayer(url).addTo(_map);
+
+        if (GeoGekko.FeatureLayers[layerName].cssIcon) {
+            // Set a custom icon on each marker based on feature properties.
+            featureLayer.on('layeradd', function (e) {
+                var marker = e.layer,
+                    feature = marker.feature;
+
+                marker.setIcon(GeoGekko.FeatureLayers[layerName].cssIcon);
+            });
+        }
+
+        _featureLayers[layerName] = featureLayer;
+    }
 
     this.renderMap = function (lat, lon) {
         L.mapbox.accessToken = _accessToken;
         _map = L.mapbox.map('map', 'mapbox.light')
             .setView([lat, lon], 13)
             .addControl(L.mapbox.geocoderControl('mapbox.places', {autocomplete: true}).on('select', function (e) {
-                var lat = e.feature.center[1];
-                var lon = e.feature.center[0];
-                GeoGekko.filterLayer(lat, lon);
+//                var lat = e.feature.center[1];
+//                var lon = e.feature.center[0];
+//                GG.filterLayer(lat, lon);
             })
         );
     }
 
-    this.createLayer = function (layerName, geoJson) {
-        _layers[layerName] = {
-            geoJson: geoJson
+    this.renderLayers = function (_dataLayers) {
+        console.log('Rendering layers...');
+        for (var i in _dataLayers) {
+            _showLayer(_dataLayers[i]);
         }
-    }
-
-    this.removeLayer = function (layerName) {
-
-    }
-
-    this.addMarker = function (markerJson) {
-        L.marker([40.7217199, -74.0028646]).addTo(_map);  // soho
-    }
-
-    (function () {
-
-    })();
-}
-
-GeoGekko.MapEngine..Google = function () {
-
-    this.renderMap = function () {
-        console.log('Not Implemented');
-    }
-
-    this.addMarker = function () {
-        console.log('Not Implemented');
     }
 }
