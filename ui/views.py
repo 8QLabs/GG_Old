@@ -27,8 +27,43 @@ def filter(request):
     lat = request.GET['lat']
     lon = request.GET['lon']
 
-    print lat
-    hits = get_taxi_data(lat, lon, request)
+    data_array = None
+    if request.GET['index'] == 'taxi':
+        data_array = filter_taxi_data(lat, lon, request)
+    elif request.GET['index'] == 'tweets':
+        data_array = filter_tweets(lat, lon, request)
+
+    return HttpResponse(json.dumps(data_array), content_type="application/json")
+
+def filter_taxi_data (lat, lon, request):
+    query_filter = [{
+        "geo_distance": {
+            "distance": ".1km",
+            "dropoff_location": {
+                "lat": lat,
+                "lon": lon
+            }
+        }
+    }]
+
+    extra_filters = build_time_filter(request)
+    query_filter.extend(extra_filters)
+
+    result = es.search(index="nyc_taxi_data", doc_type="taxi", body={
+        # "query": {"match_all" : { }},
+        "query": {
+            "filtered": {
+                "filter": {
+                    "and" : query_filter
+                }
+            }
+        },
+        "size": 10000
+    })
+
+    hits = result['hits']['hits']
+
+    print str(len(hits)) + ' pick locations found.'
 
     data_array = []
     for hit in hits:
@@ -49,18 +84,10 @@ def filter(request):
             }
          })
 
-    return HttpResponse(json.dumps(data_array), content_type="application/json")
+    return data_array
 
-def get_taxi_data(lat, lon, request):
-    query_filter = [{
-        "geo_distance": {
-            "distance": ".1km",
-            "dropoff_location": {
-                "lat": lat,
-                "lon": lon
-            }
-        }
-    }]
+def build_time_filter(request):
+    query_filter = []
     if 'time_of_day' in request.GET:
         time_of_day = request.GET['time_of_day']
 
@@ -118,38 +145,27 @@ def get_taxi_data(lat, lon, request):
                     }
                 })
 
-    result = es.search(index="nyc_taxi_data", doc_type="taxi", body={
-        # "query": {"match_all" : { }},
-        "query": {
-            "filtered": {
-                "filter": {
-                    "and" : query_filter
-                }
+    return query_filter
+
+def filter_tweets(lat, lon, request):
+    query_filter = [{
+        "geo_distance": {
+            "distance": "10km",
+            "location": {
+                "lat": lat,
+                "lon": lon
             }
-        },
-        "size": 10000
-    })
+        }
+    }]
 
-    hits = result['hits']['hits']
+    extra_filters = build_time_filter(request)
+    query_filter.extend(extra_filters)
 
-    print str(len(hits)) + ' found'
-
-    return hits
-
-def get_tweets(lat, lon):
     result = es.search(index="tweets", doc_type="tweet", body={
         # "query": {"match_all" : { }},
         "query": {
             "filtered": {
-                "filter": {
-                    "geo_distance": {
-                        "distance": "10km",
-                        "location": {
-                            "lat": lat,
-                            "lon": lon
-                        }
-                    }
-                }
+                "filter": query_filter
             }
         },
         "size": 5000

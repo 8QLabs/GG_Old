@@ -5,10 +5,13 @@ from django.views.debug import default_urlconf
 
 urlpatterns = patterns('core.views',
     url(r'^index/dashboard$', 'dashboard'),
+    url(r'^index/janfeb$', 'index_janfeb_tweets'),
+
 )
 
 urlpatterns += patterns('ui.views',
     url(r'^map$', 'map'),
+    url(r'^map/filter$', 'filter'),
     url(r'^map/filter$', 'filter'),
 )
 

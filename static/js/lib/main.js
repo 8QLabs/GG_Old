@@ -61,7 +61,7 @@ GeoGekko.FeatureLayers = {
     'nyc-taxi': {
         name: 'nyc-taxi',
         active: true,
-        dataUrl: '/map/filter',
+        dataUrl: '/map/filter?index=taxi',
         startPoint: [40.7217199, -74.0028646],  // hastens soho locations
         cssIcon: L.divIcon({
             // Specify a class name we can refer to in CSS.
@@ -80,8 +80,8 @@ GeoGekko.FeatureLayers = {
     },
     'tweets': {
         name: 'tweets',
-        dataUrl: '/map/filter',
-        active: false
+        dataUrl: '/map/filter?index=tweets',
+        active: true
     }
 };
 
@@ -173,7 +173,7 @@ GeoGekko.MapEngine.Mapbox = function () {
             if (layer.startPoint) {
                 var lat = layer.startPoint[0];
                 var lon = layer.startPoint[1];
-                var url = '/map/filter?lat=' + lat + '&lon=' + lon;
+                var url = layer.dataUrl + '&lat=' + lat + '&lon=' + lon;
                 console.log(url);
                 var featureLayer = L.mapbox.featureLayer(url).addTo(_map);
 
@@ -201,7 +201,7 @@ GeoGekko.MapEngine.Mapbox = function () {
         if (featureLayer)
             _map.removeLayer(featureLayer);
 
-        var url = '/map/filter?lat=' + lat + '&lon=' + lon;
+        var url = GeoGekko.FeatureLayers[layerName].dataUrl + '&lat=' + lat + '&lon=' + lon;
         if (filters) {
             url += '&' + filters;
         }

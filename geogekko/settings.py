@@ -107,6 +107,14 @@ DATABASES = {
         'PORT': '5432',
         'USER': 'user',
         'PASSWORD': 'boston'
+    },
+    'twitter': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'Twitter',
+        'USER': 'root',
+        'PASSWORD': 'boston',
+        'HOST': '107.170.64.158',   # Or an IP Address that your DB is hosted on
+        'PORT': '3306'
     }
 }
 

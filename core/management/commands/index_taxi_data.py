@@ -7,7 +7,7 @@ from datetime import datetime
 from django.conf import settings
 
 # create instance of elasticsearch
-es = Elasticsearch(["http://localhost:9200/"])
+es = Elasticsearch([settings.ELASTIC_SEARCH_HOST])
 
 INDEX_NAME = 'nyc_taxi_data'
 TYPE_NAME = 'taxi'
